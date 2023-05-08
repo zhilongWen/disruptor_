@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.at</groupId>
-    <artifactId>disruptor_learning</artifactId>
+    <artifactId>disruptor-learning</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
