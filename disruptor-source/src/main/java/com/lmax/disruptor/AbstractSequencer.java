@@ -32,6 +32,7 @@ public abstract class AbstractSequencer implements Sequencer
 
     protected final int bufferSize;
     protected final WaitStrategy waitStrategy;
+    // 实际 ringbuffer 的游标
     protected final Sequence cursor = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
     protected volatile Sequence[] gatingSequences = new Sequence[0];
 
@@ -80,6 +81,8 @@ public abstract class AbstractSequencer implements Sequencer
     @Override
     public final void addGatingSequences(Sequence... gatingSequences)
     {
+        // 此处的 Sequence 是消费者的 sequence
+        // com.at.disruptor._03_multi.Main 类 53 行
         SequenceGroups.addSequences(this, SEQUENCE_UPDATER, this, gatingSequences);
     }
 

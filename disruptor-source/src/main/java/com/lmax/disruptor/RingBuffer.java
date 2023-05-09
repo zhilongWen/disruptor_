@@ -54,7 +54,7 @@ abstract class RingBufferFields<E> extends RingBufferPad
     }
 
     private final long indexMask;
-    private final Object[] entries;
+    private final Object[] entries;  // ringBuffer 底层是一个 object 数组
     protected final int bufferSize;
     protected final Sequencer sequencer;
 
@@ -76,6 +76,8 @@ abstract class RingBufferFields<E> extends RingBufferPad
 
         this.indexMask = bufferSize - 1;
         this.entries = new Object[sequencer.getBufferSize() + 2 * BUFFER_PAD];
+
+        // 内存预加载
         fill(eventFactory);
     }
 
@@ -83,6 +85,11 @@ abstract class RingBufferFields<E> extends RingBufferPad
     {
         for (int i = 0; i < bufferSize; i++)
         {
+            /**
+             * 内存预加载机制，在初始化时给数组的每个位置创建一个空对象，每次 put 数据时进行 update 操作，这些对象一直存活在 ringbuffer 中，有效避免 gc
+             *
+             * 这里的 eventFactory.newInstance() 实际是调用用户的具体实现
+             */
             entries[BUFFER_PAD + i] = eventFactory.newInstance();
         }
     }
@@ -210,6 +217,9 @@ public final class RingBuffer<E> extends RingBufferFields<E> implements Cursored
     {
         switch (producerType)
         {
+            /**
+             * 根据不同的生产者策略创建
+             */
             case SINGLE:
                 return createSingleProducer(factory, bufferSize, waitStrategy);
             case MULTI:

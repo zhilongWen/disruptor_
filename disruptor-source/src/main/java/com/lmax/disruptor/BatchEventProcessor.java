@@ -150,25 +150,39 @@ public final class BatchEventProcessor<T>
     private void processEvents()
     {
         T event = null;
+
+        // 消费者实际可用的下一个序号
         long nextSequence = sequence.get() + 1L;
 
         while (true)
         {
             try
             {
+                // 真实可用序号
                 final long availableSequence = sequenceBarrier.waitFor(nextSequence);
+
                 if (batchStartAware != null)
                 {
                     batchStartAware.onBatchStart(availableSequence - nextSequence + 1);
                 }
 
+                // nextSequence 消费者下一个可用序号，假设 nextSequence = 10
+                // availableSequence 消费者真实序号，假设 availableSequence = 13
                 while (nextSequence <= availableSequence)
                 {
+                    // 消费 13 - 10 = 3 条数据
+
+                    // 获取数据
                     event = dataProvider.get(nextSequence);
+
+                    // 调用实际处理的 handler
                     eventHandler.onEvent(event, nextSequence, nextSequence == availableSequence);
+
+                    // 消费者序号 +1
                     nextSequence++;
                 }
 
+                // 更新 sequence
                 sequence.set(availableSequence);
             }
             catch (final TimeoutException e)

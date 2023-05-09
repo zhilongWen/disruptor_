@@ -56,6 +56,7 @@ public class Main {
 
         for (int i = 0; i < 10; i++) {
             buffer.putLong(0, i);
+            // 发送一条消息通知消费者消费
             producer.put(buffer);
         }
 

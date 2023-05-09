@@ -64,6 +64,7 @@ public final class Util
      */
     public static long getMinimumSequence(final Sequence[] sequences, long minimum)
     {
+        // 获取消费者中最小的序号（sequence）
         for (int i = 0, n = sequences.length; i < n; i++)
         {
             long value = sequences[i].get();

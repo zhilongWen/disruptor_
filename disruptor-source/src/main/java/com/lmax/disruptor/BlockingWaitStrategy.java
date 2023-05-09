@@ -31,12 +31,24 @@ public final class BlockingWaitStrategy implements WaitStrategy
     private final Lock lock = new ReentrantLock();
     private final Condition processorNotifyCondition = lock.newCondition();
 
+    /**
+     *
+     * @param sequence          消费者想要的序号.
+     * @param cursorSequence    ringbuffer 中的最大序号
+     * @param dependentSequence on which to wait.
+     * @param barrier           the processor is waiting on.
+     * @return
+     * @throws AlertException
+     * @throws InterruptedException
+     */
     @Override
     public long waitFor(long sequence, Sequence cursorSequence, Sequence dependentSequence, SequenceBarrier barrier)
         throws AlertException, InterruptedException
     {
         long availableSequence;
-        if (cursorSequence.get() < sequence)
+
+        // cursorSequence.get() 获取生产者序号
+        if (cursorSequence.get() < sequence) // ringbuffer 的最大序号小于消费者的序号，程序挂起
         {
             lock.lock();
             try
@@ -44,6 +56,8 @@ public final class BlockingWaitStrategy implements WaitStrategy
                 while (cursorSequence.get() < sequence)
                 {
                     barrier.checkAlert();
+
+                    // 等待
                     processorNotifyCondition.await();
                 }
             }

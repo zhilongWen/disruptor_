@@ -114,29 +114,41 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
      * @see Sequencer#next(int)
      */
     @Override
-    public long next(int n)
+    public long next(int n) // 1
     {
-        if (n < 1)
+        if (n < 1) //
         {
             throw new IllegalArgumentException("n must be > 0");
         }
 
-        long nextValue = this.nextValue;
+        long nextValue = this.nextValue; // 语义级别，当前 sequence 的值，初始值为 -1
 
+        // nextSequence = -1 + 1 = 0
         long nextSequence = nextValue + n;
+
+        // 假设 ringbuffer 大小为 10 即 bufferSize = 10
+        // wrapPoint = 0 - 10 = -10
+        // wrapPoint 用于判断 sequence 有没有绕过 ringbuffer，正数表示绕过了 ringbuffer
         long wrapPoint = nextSequence - bufferSize;
+
+        // 用于缓存优化
         long cachedGatingSequence = this.cachedValue;
 
         if (wrapPoint > cachedGatingSequence || cachedGatingSequence > nextValue)
         {
             cursor.setVolatile(nextValue);  // StoreLoad fence
 
+            // 消费者最小的的 sequence
             long minSequence;
+
+            // 自旋操作
+            // 如果生产者的序号大于消费者的最小序号，则将线程挂起（自选）
             while (wrapPoint > (minSequence = Util.getMinimumSequence(gatingSequences, nextValue)))
             {
                 LockSupport.parkNanos(1L); // TODO: Use waitStrategy to spin?
             }
 
+            // 将消费者最小的序号缓存下来，最后赋值给 cachedGatingSequence
             this.cachedValue = minSequence;
         }
 
@@ -203,6 +215,7 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
     @Override
     public void publish(long sequence)
     {
+        // 将游标设置为将要发布的 sequence
         cursor.set(sequence);
         waitStrategy.signalAllWhenBlocking();
     }
