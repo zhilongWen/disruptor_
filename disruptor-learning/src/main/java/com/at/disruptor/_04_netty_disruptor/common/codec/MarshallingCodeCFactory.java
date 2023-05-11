@@ -1,4 +1,4 @@
-package com.at.disruptor._04_netty_disruptor.common;
+package com.at.disruptor._04_netty_disruptor.common.codec;
 
 import io.netty.handler.codec.marshalling.*;
 import org.jboss.marshalling.MarshallerFactory;

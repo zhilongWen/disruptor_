@@ -1,4 +1,4 @@
-package com.at.disruptor._04_netty_disruptor.common;
+package com.at.disruptor._04_netty_disruptor.common.entity;
 
 import java.io.Serializable;
 

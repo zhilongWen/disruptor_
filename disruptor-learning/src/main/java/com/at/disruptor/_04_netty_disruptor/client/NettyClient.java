@@ -1,7 +1,12 @@
 package com.at.disruptor._04_netty_disruptor.client;
 
-import com.at.disruptor._04_netty_disruptor.common.MarshallingCodeCFactory;
-import com.at.disruptor._04_netty_disruptor.common.TranslatorData;
+import com.at.disruptor._04_netty_disruptor.common.codec.MarshallingCodeCFactory;
+import com.at.disruptor._04_netty_disruptor.common.disruptor.MessageConsumer;
+import com.at.disruptor._04_netty_disruptor.common.disruptor.RingBufferWorkerPoolFactory;
+import com.at.disruptor._04_netty_disruptor.common.entity.TranslatorData;
+import com.lmax.disruptor.BlockingWaitStrategy;
+import com.lmax.disruptor.YieldingWaitStrategy;
+import com.lmax.disruptor.dsl.ProducerType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -10,8 +15,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-
-import java.util.Optional;
 
 /**
  * @author zero
@@ -25,6 +28,27 @@ public class NettyClient {
 
 
     public static void main(String[] args) {
+
+
+
+        MessageConsumer[] conusmers = new MessageConsumer[4];
+        for(int i =0; i < conusmers.length; i++) {
+            MessageConsumer messageConsumer = new MessageConsumerImplClient("code:clientId:" + i);
+            conusmers[i] = messageConsumer;
+        }
+        RingBufferWorkerPoolFactory.getInstance().initAndStart(ProducerType.MULTI,
+                1024*1024,
+                new YieldingWaitStrategy(),
+//                new BlockingWaitStrategy(),
+                conusmers);
+
+
+
+
+
+
+
+
 
         EventLoopGroup group = null;
 
